@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
 
 class ShortenerController extends Controller
 {
-    private $kinds = ['post', 'series'];
+    private $kinds = ['post', 'series', 'external'];
     private $type = 'web';
     public function index()
     {
@@ -56,25 +56,44 @@ class ShortenerController extends Controller
             }
         }
 
-        $child = null;
-        if ($payload['kind'] == 'post') {
-            $child = Post::query()
-                ->where('id', $payload['parent_id'])
-                ->first();
+        if ($payload['kind'] == 'external') {
+            $validator = Validator::make($payload, [
+                'target' => 'required|url',
+            ]);
+    
+            if ($validator->fails()) {
+                if ($this->type == 'web') {
+                    return redirect()->back()->withErrors($validator->errors());
+                }
+            }
+            $shorten = Shortener::query()->create([
+                'user_id' => $user_id,
+                'kind' => strtoupper($payload['kind']),
+                'parent_id' => 0,
+                'alias' => $payload['url'],
+                'target' => $payload['target'],
+            ]);
+        } else {
+            $child = null;
+            if ($payload['kind'] == 'post') {
+                $child = Post::query()
+                    ->where('id', $payload['parent_id'])
+                    ->first();
+            }
+            if ($payload['kind'] == 'series') {
+                $child = Chapter::query()
+                    ->where('id', $payload['parent_id'])
+                    ->first();
+            }
+    
+            $shorten = Shortener::query()->create([
+                'user_id' => $user_id,
+                'kind' => strtoupper($payload['kind']),
+                'parent_id' => $payload['parent_id'],
+                'alias' => $payload['url'],
+                'target' => $request->getSchemeAndHttpHost() . '/' . $payload['kind'] . '/' . $child->slug,
+            ]);
         }
-        if ($payload['kind'] == 'series') {
-            $child = Chapter::query()
-                ->where('id', $payload['parent_id'])
-                ->first();
-        }
-
-        $shorten = Shortener::query()->create([
-            'user_id' => $user_id,
-            'kind' => strtoupper($payload['kind']),
-            'parent_id' => $payload['parent_id'],
-            'alias' => $payload['url'],
-            'target' => $request->getSchemeAndHttpHost() . '/' . $payload['kind'] . '/' . $child->slug,
-        ]);
 
         if ($this->type == 'web') {
             return redirect()->back()->with([

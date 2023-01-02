@@ -74,7 +74,7 @@
                         <template x-if="selectedType === 'external'">
                             <div class="w-full">
                                 <label for="states" class="sr-only">Choose a target</label>
-                                <input name="url" type="url" id="target" class="block p-2.5 w-full z-20 text-sm text-gray-900 bg-white rounded-r-lg border-l-gray-100 border-l-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="External URL">
+                                <input name="target" type="url" id="target" class="block p-2.5 w-full z-20 text-sm text-gray-900 bg-white rounded-r-lg border-l-gray-100 border-l-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="External URL">
                             </div>
                         </template>
                     </div>
