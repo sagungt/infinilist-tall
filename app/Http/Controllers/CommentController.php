@@ -129,12 +129,11 @@ class CommentController extends Controller
         ]);
     }
 
-    public function update(Request $request, $kind, $parent_id)
+    public function update(Request $request, $kind, $parent_id, $id)
     {
         $payload = $request->all();
 
         $validator = Validator::make($payload, [
-            'id' => 'required',
             'content' => 'required',
         ]);
 
@@ -149,7 +148,7 @@ class CommentController extends Controller
         $comment = Comment::query()
             ->where('kind', strtoupper($kind))
             ->where('parent_id', $parent_id)
-            ->where('id', $payload['id'])
+            ->where('id', $id)
             ->first();
 
         if ($comment == null) {

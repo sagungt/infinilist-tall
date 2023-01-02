@@ -80,7 +80,7 @@ Route::prefix('comments')
         Route::post('/{id}/destroy', 'destroy')->middleware('cookie.token');
         Route::get('/{kind}/{parent_id}', 'index');
         Route::post('/{kind}/{parent_id}', 'store')->middleware('cookie.token');
-        Route::post('/{kind}/{parent_id}/update', 'update')->middleware('cookie.token');
+        Route::post('/{kind}/{parent_id}/{id}', 'update')->middleware('cookie.token');
     });
 
 Route::prefix('series')

@@ -91,7 +91,7 @@
                     @endauth
                     <div class="flex flex-col w-full">
                         <template x-for="comment in comments">
-                            <div class="flex flex-row w-auto py-5 gap-x-5" {{-- x-bind:class="Number(comment.parent_comment_id) > 0 ? 'ml-14' : ''" --}} x-data="{ showReply: false }">
+                            <div class="flex flex-row w-auto py-5 gap-x-5" {{-- x-bind:class="Number(comment.parent_comment_id) > 0 ? 'ml-14' : ''" --}} x-data="{ showReply: false, showEdit: false }">
                                 <template x-if="comment.owner.profile_url === null">
                                     <div class="w-10 h-10 rounded-full bg-slate-900"></div>
                                 </template>
@@ -124,6 +124,11 @@
                                             <span>💬 <span class="text-xs">Reply</span></span>
                                         </button>
                                         @auth
+                                            <template x-if="comment.owner.id === @js(auth()->user()->id)">
+                                                <button x-on:click="showEdit = !showEdit">
+                                                    <span>🖊 <span class="text-xs">Edit</span></span>
+                                                </button>
+                                            </template>
                                             <template x-if="@js($series['owner']['id']) === @js(auth()->user()->id)">
                                                 <button x-on:click="togglePinComment(comment.id)">
                                                     <span>📌 <span class="text-xs" x-text="comment.is_pinned ? 'Pinned' : 'Pin'"></span></span>
@@ -137,6 +142,13 @@
                                                 <textarea x-init="el = $el" name="content" id="message-0" rows="4" class="block p-2.5 w-full max-w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Write your reply here..."></textarea>
                                     
                                                 <button x-on:click="postComment(parentId, id, el)" data-id="0" type="button" class="post-comment my-4 py-2 px-4 rounded-lg bg-slate-700 text-white w-full md:w-fit lg:w-fit">Post 🚀</button>
+                                            </div>
+                                        </template>
+                                        <template x-if="showEdit">
+                                            <div class="flex flex-col justify-center w-full flex-1" x-data="{ el: null, id: comment.id }">
+                                                <textarea x-init="el = $el" name="content" id="message-0" rows="4" class="block p-2.5 w-full max-w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Write your reply here..." x-bind:value="comment.content"></textarea>
+                                    
+                                                <button x-on:click="updateComment(parentId, id, el)" data-id="0" type="button" class="post-comment my-4 py-2 px-4 rounded-lg bg-slate-700 text-white w-full md:w-fit lg:w-fit">Edit 🚀</button>
                                             </div>
                                         </template>
                                     </div>
@@ -171,6 +183,7 @@
             async getComment(id) {
                 const res = await fetch(`http://localhost:8000/api/comments/series/${id}`);
                 const { data: comments } = await res.json();
+                console.log(comments);
                 this.comments = comments;
             },
             async getLike(id) {
@@ -291,6 +304,29 @@
                 document.querySelector('#success-container').dispatchEvent(new CustomEvent('show-success', { detail: {} }));
             } else {
                 api.messageContent = 'Failed to like comment';
+                document.querySelector('#error-container').dispatchEvent(new CustomEvent('show-error', { detail: {} }));
+            }
+        }
+        async function updateComment(parentId, commentId, content) {
+            if (content.value === '') return;
+            const fd = new FormData();
+            fd.append('id', commentId);
+            fd.append('content', content.value);
+            const res = await fetch(`http://localhost:8000/api/comments/series/${parentId}/${commentId}`, {
+                headers: {
+                    'X-CSRF-TOKEN': token,
+                },
+                method: 'post',
+                body: fd,
+            });
+            const { status, data } = await res.json();
+            content.value = '';
+            if (status) {
+                api.messageContent = 'Comment edited';
+                document.querySelector('#series-root').dispatchEvent(new CustomEvent('fetch-comment', { detail: {} }));
+                document.querySelector('#success-container').dispatchEvent(new CustomEvent('show-success', { detail: {} }));
+            } else {
+                api.messageContent = 'Failed to post comment';
                 document.querySelector('#error-container').dispatchEvent(new CustomEvent('show-error', { detail: {} }));
             }
         }

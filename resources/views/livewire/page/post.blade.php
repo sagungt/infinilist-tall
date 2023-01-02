@@ -156,9 +156,9 @@
                                             </template>
                                             <template x-if="showEdit">
                                                 <div class="flex flex-col justify-center w-full flex-1" x-data="{ el: null, id: comment.id }">
-                                                    <textarea x-init="el = $el" name="content" id="message-0" rows="4" class="block p-2.5 w-full max-w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Write your reply here..." x-bind="comment.content"></textarea>
+                                                    <textarea x-init="el = $el" name="content" id="message-0" rows="4" class="block p-2.5 w-full max-w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Edit your comment here..." x-bind:value="comment.content"></textarea>
                                         
-                                                    <button x-on:click="postComment(parentId, id, el)" data-id="0" type="button" class="post-comment my-4 py-2 px-4 rounded-lg bg-slate-700 text-white w-full md:w-fit lg:w-fit">Post 🚀</button>
+                                                    <button x-on:click="updateComment(parentId, id, el)" data-id="0" type="button" class="post-comment my-4 py-2 px-4 rounded-lg bg-slate-700 text-white w-full md:w-fit lg:w-fit">Edit 🚀</button>
                                                 </div>
                                             </template>
                                         </div>
@@ -334,6 +334,29 @@
                 document.querySelector('#success-container').dispatchEvent(new CustomEvent('show-success', { detail: {} }));
             } else {
                 api.messageContent = 'Failed to like comment';
+                document.querySelector('#error-container').dispatchEvent(new CustomEvent('show-error', { detail: {} }));
+            }
+        }
+        async function updateComment(parentId, commentId, content) {
+            if (content.value === '') return;
+            const fd = new FormData();
+            fd.append('id', commentId);
+            fd.append('content', content.value);
+            const res = await fetch(`http://localhost:8000/api/comments/post/${parentId}/${commentId}`, {
+                headers: {
+                    'X-CSRF-TOKEN': token,
+                },
+                method: 'post',
+                body: fd,
+            });
+            const { status, data } = await res.json();
+            content.value = '';
+            if (status) {
+                api.messageContent = 'Comment edited';
+                document.querySelector('#post-root').dispatchEvent(new CustomEvent('fetch-comment', { detail: {} }));
+                document.querySelector('#success-container').dispatchEvent(new CustomEvent('show-success', { detail: {} }));
+            } else {
+                api.messageContent = 'Failed to post comment';
                 document.querySelector('#error-container').dispatchEvent(new CustomEvent('show-error', { detail: {} }));
             }
         }
