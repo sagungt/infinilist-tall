@@ -13,7 +13,16 @@ return new class extends Migration
      */
     public function up()
     {
-        //
+        Schema::create('items', function (Blueprint $table) {
+            $table->id();
+            $table->bigInteger('list_id');
+            $table->bigInteger('parent_id')->default(0);
+            $table->string('kind');
+            $table->string('content')->nullable(true);
+            $table->text('description')->nullable(true);
+            $table->boolean('is_checked')->nullable(false);
+            $table->timestamps();
+        });
     }
 
     /**
@@ -23,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('items');
     }
 };

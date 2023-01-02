@@ -30,6 +30,11 @@ class ShortenerController extends Controller
             ->whereNull('deleted_at')
             ->first();
 
+        // $shortener->fill([
+        //     'visits' => $shortener->visits + 1,
+        // ]);
+        // $shortener->save();
+
         if ($shortener == null) {
             return redirect()->route('error.not-found');
         }
