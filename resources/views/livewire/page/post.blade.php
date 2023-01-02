@@ -101,7 +101,7 @@
                         @endauth
                         <div class="flex flex-col w-full">
                             <template x-for="comment in comments">
-                                <div class="flex flex-row w-auto py-5 gap-x-5" {{-- x-bind:class="Number(comment.parent_comment_id) > 0 ? 'ml-14' : ''" --}} x-data="{ showReply: false }">
+                                <div class="flex flex-row w-auto py-5 gap-x-5" {{-- x-bind:class="Number(comment.parent_comment_id) > 0 ? 'ml-14' : ''" --}} x-data="{ showReply: false, showEdit: false }">
                                     <template x-if="comment.owner.profile_url === null">
                                         <div class="w-10 h-10 rounded-full bg-slate-900"></div>
                                     </template>
@@ -134,6 +134,11 @@
                                                 <span>💬 <span class="text-xs">Reply</span></span>
                                             </button>
                                             @auth
+                                                <template x-if="comment.owner.id === @js(auth()->user()->id)">
+                                                    <button x-on:click="showEdit = !showEdit">
+                                                        <span>🖊 <span class="text-xs">Edit</span></span>
+                                                    </button>
+                                                </template>
                                                 <template x-if="post.owner.id === @js(auth()->user()->id)">
                                                     <button x-on:click="togglePinComment(comment.id)">
                                                         <span>📌 <span class="text-xs" x-text="comment.is_pinned ? 'Pinned' : 'Pin'"></span></span>
@@ -145,6 +150,13 @@
                                             <template x-if="showReply">
                                                 <div class="flex flex-col justify-center w-full flex-1" x-data="{ el: null, id: comment.id }">
                                                     <textarea x-init="el = $el" name="content" id="message-0" rows="4" class="block p-2.5 w-full max-w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Write your reply here..."></textarea>
+                                        
+                                                    <button x-on:click="postComment(parentId, id, el)" data-id="0" type="button" class="post-comment my-4 py-2 px-4 rounded-lg bg-slate-700 text-white w-full md:w-fit lg:w-fit">Post 🚀</button>
+                                                </div>
+                                            </template>
+                                            <template x-if="showEdit">
+                                                <div class="flex flex-col justify-center w-full flex-1" x-data="{ el: null, id: comment.id }">
+                                                    <textarea x-init="el = $el" name="content" id="message-0" rows="4" class="block p-2.5 w-full max-w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Write your reply here..." x-bind="comment.content"></textarea>
                                         
                                                     <button x-on:click="postComment(parentId, id, el)" data-id="0" type="button" class="post-comment my-4 py-2 px-4 rounded-lg bg-slate-700 text-white w-full md:w-fit lg:w-fit">Post 🚀</button>
                                                 </div>

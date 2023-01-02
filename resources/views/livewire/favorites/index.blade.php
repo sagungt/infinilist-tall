@@ -1,6 +1,6 @@
 <div class="pt-20 min-h-screen">
     <div class="mx-auto gap-y-5 flex flex-col w-full px-2 md:w-[80%] lg:w-2/3 justify-center mb-5">
-        <h1 class="font-extrabold text-5xl">My Favorites</h1>
+        <h1 class="font-extrabold text-5xl">My Favorites ({{ sizeof($favorites) }})</h1>
         @if (session('success'))
             <div class="bg-teal-100 rounded-md p-4">
                 <span class="text-teal-500 text-sm">{{ session('success') }}</span>
